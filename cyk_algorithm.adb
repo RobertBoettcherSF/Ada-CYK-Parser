@@ -8,6 +8,11 @@ with Ada.Unchecked_Deallocation;
 
 package body Cyk_Algorithm is
 
+   -- The parse tree strictly uses anonymous access types (access Parse_Node) for Left/Right
+   -- components to prevent named access type proliferation. We suppress the warning for
+   -- anonymous access allocators globally in this body.
+   pragma Warnings (Off, "-gnatw_a");
+
    ----------------------------------------------------------------------------
    -- Is_In_CNF Implementation
    ----------------------------------------------------------------------------
@@ -34,7 +39,7 @@ package body Cyk_Algorithm is
    function Recognize (G : Grammar; Input : Input_String) return Boolean is
       N : constant Natural := Input'Length;
       type Table_Type is array (1 .. N, 1 .. N, Nonterminal) of Boolean;
-      P : Table_Type := (others => (others => (others => False)));
+      P : Table_Type := [others => [others => [others => False]]];
    begin
       -- 1. Base case: length 1 substrings (terminal productions)
       for S_Idx in 1 .. N loop
@@ -85,7 +90,7 @@ package body Cyk_Algorithm is
       end record;
 
       type Table_Parse is array (1 .. N, 1 .. N, Nonterminal) of Cell_Data;
-      P : Table_Parse := (others => (others => (others => (Valid => False, Node => null))));
+      P : Table_Parse := [others => [others => [others => (Valid => False, Node => null)]]];
    begin
       -- 1. Base case: length 1
       for S_Idx in 1 .. N loop
@@ -158,7 +163,7 @@ package body Cyk_Algorithm is
       end record;
 
       type Table_Weighted is array (1 .. N, 1 .. N, Nonterminal) of Weighted_Cell;
-      P : Table_Weighted := (others => (others => (others => (Valid => False, Log_Prob => -1.0E38, Node => null))));
+      P : Table_Weighted := [others => [others => [others => (Valid => False, Log_Prob => -1.0E38, Node => null)]]];
    begin
       Accepted := False;
       Best_Log_P := -1.0E38;
