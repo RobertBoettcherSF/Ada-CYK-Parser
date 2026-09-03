@@ -79,10 +79,11 @@ begin
                                     Productions => [1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                                     2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
                                                     3 => (Kind => Terminal_Prod, LHS => 'B', RHS_Terminal => 'b')]);
-      Tree : Parse_Node_Access := Parse (G1, ['b', 'a']);
+      Bad_Input : constant Input_String := ['b', 'a'];
+      Tree : Parse_Node_Access := Parse (G1, Bad_Input);
    begin
       Check ("4.1 Parse returns null tree for invalid input 'ba'", Tree = null);
-      Check ("4.2 Input length correctness verified", Input_String'['b', 'a']'Length = 2);
+      Check ("4.2 Input length correctness verified", Bad_Input'Length = 2);
       Check ("4.3 Grammar count unchanged", G1.Count = 3);
       Free_Parse_Tree (Tree);
    end;
