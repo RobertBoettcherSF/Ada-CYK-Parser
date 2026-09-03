@@ -21,7 +21,8 @@ begin
    -- TEST 1 — Basic Grammar Recognition (Positive Case)
    Put_Line ("TEST 1 — Basic Grammar Recognition (Positive Case)");
    declare
-      G1 : Grammar (3) := (Count => 3,
+      G1 : Grammar (3) := (Max_Productions => 3,
+                           Count => 3,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                            2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
@@ -29,15 +30,16 @@ begin
       Input1 : Input_String := ('a', 'b');
       Res : Boolean := Recognize (G1, Input1);
    begin
-      Check ("1.1 Recognize accepts 'ab' for S->AB, A->a, B->b", Res = True);
-      Check ("1.2 Recognize rejects 'aa' for same grammar", Recognize (G1, Input_String'('a', 'a')) = False);
-      Check ("1.3 Recognize rejects single char 'a'", Recognize (G1, Input_String'('a')) = False);
+      Check ("1.1 Recognize accepts 'ab' for S->AB, A->a, B->b", Res);
+      Check ("1.2 Recognize rejects 'aa' for same grammar", not Recognize (G1, Input_String'('a', 'a')));
+      Check ("1.3 Recognize rejects single char 'a'", not Recognize (G1, Input_String'(1 => 'a')));
    end;
 
    -- TEST 2 — Recognition of Multi-step Grammar
    Put_Line ("TEST 2 — Multi-step Grammar Recognition");
    declare
-      G2 : Grammar (5) := (Count => 5,
+      G2 : Grammar (5) := (Max_Productions => 5,
+                           Count => 5,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'X'),
                                            2 => (Kind => Binary, LHS => 'X', RHS_1 => 'B', RHS_2 => 'C'),
@@ -46,15 +48,16 @@ begin
                                            5 => (Kind => Terminal_Prod, LHS => 'C', RHS_Terminal => 'c')));
       Input2 : Input_String := ('a', 'b', 'c');
    begin
-      Check ("2.1 Recognize accepts 'abc'", Recognize (G2, Input2) = True);
-      Check ("2.2 Recognize rejects 'ab'", Recognize (G2, Input_String'('a', 'b')) = False);
-      Check ("2.3 Recognize rejects 'acb'", Recognize (G2, Input_String'('a', 'c', 'b')) = False);
+      Check ("2.1 Recognize accepts 'abc'", Recognize (G2, Input2));
+      Check ("2.2 Recognize rejects 'ab'", not Recognize (G2, Input_String'('a', 'b')));
+      Check ("2.3 Recognize rejects 'acb'", not Recognize (G2, Input_String'('a', 'c', 'b')));
    end;
 
    -- TEST 3 — Parse Tree Generation (Variant 2) Positive
    Put_Line ("TEST 3 — Parse Tree Generation Positive");
    declare
-      G1 : Grammar (3) := (Count => 3,
+      G1 : Grammar (3) := (Max_Productions => 3,
+                           Count => 3,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                            2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
@@ -70,7 +73,8 @@ begin
    -- TEST 4 — Parse Tree Generation Negative
    Put_Line ("TEST 4 — Parse Tree Generation Negative");
    declare
-      G1 : Grammar (3) := (Count => 3,
+      G1 : Grammar (3) := (Max_Productions => 3,
+                           Count => 3,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                            2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
@@ -86,7 +90,8 @@ begin
    -- TEST 5 — Weighted CYK Parsing (Variant 3) Positive
    Put_Line ("TEST 5 — Weighted CYK Parsing Positive");
    declare
-      WG : Weighted_Grammar (3) := (Count => 3,
+      WG : Weighted_Grammar (3) := (Max_Productions => 3,
+                                    Count => 3,
                                     Start_Sym => 'S',
                                     Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B', Log_Prob => -0.5),
                                                     2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a', Log_Prob => -0.2),
@@ -96,7 +101,7 @@ begin
       Root     : Parse_Node_Access;
    begin
       Parse_Weighted (WG, ('a', 'b'), Accepted, Best_P, Root);
-      Check ("5.1 Weighted CYK accepts 'ab'", Accepted = True);
+      Check ("5.1 Weighted CYK accepts 'ab'", Accepted);
       Check ("5.2 Weighted CYK calculates correct total log prob (-1.0)", Best_P = -1.0);
       Check ("5.3 Weighted CYK returns parse tree", Root /= null);
       Free_Parse_Tree (Root);
@@ -105,7 +110,8 @@ begin
    -- TEST 6 — Weighted CYK Parsing Negative
    Put_Line ("TEST 6 — Weighted CYK Parsing Negative");
    declare
-      WG : Weighted_Grammar (3) := (Count => 3,
+      WG : Weighted_Grammar (3) := (Max_Productions => 3,
+                                    Count => 3,
                                     Start_Sym => 'S',
                                     Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B', Log_Prob => -0.5),
                                                     2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a', Log_Prob => -0.2),
@@ -115,7 +121,7 @@ begin
       Root     : Parse_Node_Access;
    begin
       Parse_Weighted (WG, ('a', 'a'), Accepted, Best_P, Root);
-      Check ("6.1 Weighted CYK rejects invalid input 'aa'", Accepted = False);
+      Check ("6.1 Weighted CYK rejects invalid input 'aa'", not Accepted);
       Check ("6.2 Root is null on rejection", Root = null);
       Check ("6.3 Grammar validity intact", WG.Count = 3);
    end;
@@ -123,13 +129,14 @@ begin
    -- TEST 7 — CNF Validation Helper (`Is_In_CNF`)
    Put_Line ("TEST 7 — CNF Validation Helper");
    declare
-      G_CNF : Grammar (2) := (Count => 2,
+      G_CNF : Grammar (2) := (Max_Productions => 2,
+                              Count => 2,
                               Start_Sym => 'S',
                               Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                               2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a')));
       Valid : Boolean := Is_In_CNF (G_CNF);
    begin
-      Check ("7.1 Is_In_CNF returns True for CNF grammar", Valid = True);
+      Check ("7.1 Is_In_CNF returns True for CNF grammar", Valid);
       Check ("7.2 Start symbol is correctly set", G_CNF.Start_Sym = 'S');
       Check ("7.3 Production count is 2", G_CNF.Count = 2);
    end;
@@ -152,21 +159,27 @@ begin
    -- TEST 9 — Single Character Input with Single Terminal Rule
    Put_Line ("TEST 9 — Single Character Input");
    declare
-      G_Single : Grammar (1) := (Count => 1,
+      G_Single : Grammar (1) := (Max_Productions => 1,
+                                 Count => 1,
                                  Start_Sym => 'S',
                                  Productions => (1 => (Kind => Terminal_Prod, LHS => 'S', RHS_Terminal => 'x')));
-      Input_S : Input_String := ('x');
+      Input_S : Input_String := (1 => 'x');
    begin
-      Check ("9.1 Recognize accepts single character matching rule", Recognize (G_Single, Input_S) = True);
-      Check ("9.2 Recognize rejects non-matching single character", Recognize (G_Single, Input_String'('y')) = False);
-      Check ("9.3 Parse returns valid terminal node", Parse (G_Single, Input_S) /= null);
-      Free_Parse_Tree (Parse (G_Single, Input_S));
+      Check ("9.1 Recognize accepts single character matching rule", Recognize (G_Single, Input_S));
+      Check ("9.2 Recognize rejects non-matching single character", not Recognize (G_Single, Input_String'(1 => 'y')));
+      declare
+         Tree : Parse_Node_Access := Parse (G_Single, Input_S);
+      begin
+         Check ("9.3 Parse returns valid terminal node", Tree /= null);
+         Free_Parse_Tree (Tree);
+      end;
    end;
 
    -- TEST 10 — Complex Ambiguous Grammar / Multiple Productions
    Put_Line ("TEST 10 — Ambiguous Grammar Recognition");
    declare
-      G_Amb : Grammar (4) := (Count => 4,
+      G_Amb : Grammar (4) := (Max_Productions => 4,
+                              Count => 4,
                               Start_Sym => 'S',
                               Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'S', RHS_2 => 'S'),
                                               2 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
@@ -174,23 +187,28 @@ begin
                                               4 => (Kind => Terminal_Prod, LHS => 'B', RHS_Terminal => 'b')));
       Input_Amb : Input_String := ('a', 'b', 'a', 'b');
    begin
-      Check ("10.1 Recognize accepts nested structure 'abab'", Recognize (G_Amb, Input_Amb) = True);
-      Check ("10.2 Parse generates tree for nested structure", Parse (G_Amb, Input_Amb) /= null);
-      Check ("10.3 Length of input is 4", Input_Amb'Length = 4);
-      Free_Parse_Tree (Parse (G_Amb, Input_Amb));
+      Check ("10.1 Recognize accepts nested structure 'abab'", Recognize (G_Amb, Input_Amb));
+      declare
+         Tree : Parse_Node_Access := Parse (G_Amb, Input_Amb);
+      begin
+         Check ("10.2 Parse generates tree for nested structure", Tree /= null);
+         Check ("10.3 Length of input is 4", Input_Amb'Length = 4);
+         Free_Parse_Tree (Tree);
+      end;
    end;
 
    -- TEST 11 — Boundary Input Lengths
    Put_Line ("TEST 11 — Boundary Input Lengths");
    declare
-      G1 : Grammar (3) := (Count => 3,
+      G1 : Grammar (3) := (Max_Productions => 3,
+                           Count => 3,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                            2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
                                            3 => (Kind => Terminal_Prod, LHS => 'B', RHS_Terminal => 'b')));
       Long_Input : Input_String := ('a', 'b', 'a', 'b', 'a', 'b');
    begin
-      Check ("11.1 Recognize correctly rejects longer invalid string", Recognize (G1, Long_Input) = False);
+      Check ("11.1 Recognize correctly rejects longer invalid string", not Recognize (G1, Long_Input));
       Check ("11.2 Parse returns null for longer invalid string", Parse (G1, Long_Input) = null);
       Check ("11.3 Input length is 6", Long_Input'Length = 6);
    end;
@@ -209,7 +227,8 @@ begin
    -- TEST 13 — Precondition and Constraint Verification
    Put_Line ("TEST 13 — Precondition and Contract Verification");
    declare
-      G1 : Grammar (3) := (Count => 3,
+      G1 : Grammar (3) := (Max_Productions => 3,
+                           Count => 3,
                            Start_Sym => 'S',
                            Productions => (1 => (Kind => Binary, LHS => 'S', RHS_1 => 'A', RHS_2 => 'B'),
                                            2 => (Kind => Terminal_Prod, LHS => 'A', RHS_Terminal => 'a'),
@@ -218,7 +237,7 @@ begin
    begin
       Check ("13.1 Grammar count within production bounds", Pre_Satisfied);
       Check ("13.2 Nonterminal type range check ('A'..'Z')", ('A' in Nonterminal) and ('Z' in Nonterminal));
-      Check ("13.3 Log_Probability range check (0.0 is valid max log prob)", (0.0 :: Log_Probability) = 0.0);
+      Check ("13.3 Log_Probability range check (0.0 is valid max log prob)", Log_Probability'(0.0) = 0.0);
    end;
 
    Put_Line ("");
